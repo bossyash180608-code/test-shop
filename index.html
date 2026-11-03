@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sharma Cafe</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#e8f1f8;--card:#ffffff;--ink:#12263a;--muted:#5a6f83;--star:#f5a300;--line:#cfdce8;--btn:#12263a;--btntxt:#ffffff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1c29;--card:#172b3e;--ink:#eaf2f9;--muted:#9bb0c3;--line:#27425a;--btn:#eaf2f9;--btntxt:#12263a}}
+:root[data-theme="dark"]{--bg:#0f1c29;--card:#172b3e;--ink:#eaf2f9;--muted:#9bb0c3;--line:#27425a;--btn:#eaf2f9;--btntxt:#12263a}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh;display:flex;justify-content:center;padding:20px 16px 40px}
+main{width:100%;max-width:420px}
+.hero{background:var(--card);border:1px solid var(--line);border-radius:28px;padding:28px 22px 24px;text-align:center}
+.logo{width:68px;height:68px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-weight:800;font-size:28px;margin:0 auto 14px}
+h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.02em}
+.tag{margin:6px 0 22px;color:var(--muted);font-size:15px}
+.ask{font-weight:600;font-size:17px;margin:0 0 10px}
+.stars{display:flex;justify-content:center;gap:4px}
+.stars a{display:block;padding:2px;border-radius:10px;text-decoration:none}
+.stars svg{width:46px;height:46px;fill:var(--star);transition:transform .15s}
+.stars a:hover svg,.stars a:focus-visible svg{transform:scale(1.15) rotate(-6deg)}
+.sub{margin:10px 0 0;color:var(--muted);font-size:14px}
+.links{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.links a{display:flex;align-items:center;gap:14px;padding:16px 18px;background:var(--card);border:1px solid var(--line);border-radius:18px;color:var(--ink);text-decoration:none;font-weight:600;font-size:17px}
+.links a:active{transform:scale(.98)}
+.links a.main{background:var(--btn);color:var(--btntxt);border-color:var(--btn)}
+.links svg{width:26px;height:26px;flex:none}
+.links small{display:block;font-weight:400;font-size:13px;opacity:.7;margin-top:1px}
+.ideas{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px 20px}
+.ideas .ask{font-size:16px;margin-bottom:8px}
+.ideas ul{margin:0;padding-left:20px;color:var(--muted);font-size:15px;line-height:1.55}
+.ideas li{margin:4px 0}
+a:focus-visible{outline:3px solid var(--star);outline-offset:2px}
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:22px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <section class="hero">
+    <div class="logo" id="logo">S</div>
+    <h1 id="name"></h1>
+    <p class="tag" id="tagline"></p>
+    <p class="ask">Enjoyed your visit? Tap a star to rate us</p>
+    <div class="stars" id="stars"></div>
+    <p class="sub">Opens Google. Takes 20 seconds.</p>
+  </section>
+  <section class="ideas" id="ideas">
+    <p class="ask">Not sure what to write? Think about:</p>
+    <ul id="ideaList"></ul>
+  </section>
+  <nav class="links" id="links"></nav>
+  <footer id="foot"></footer>
+</main>
+
+<script>
+/* ===== EDIT THESE FOR EACH SHOP ===== */
+var SHOP = {
+  name: "Sharma Cafe",
+  tagline: "Fresh coffee and snacks in Jaipur",
+  googleReview: "https://search.google.com/local/writereview?placeid=YOUR_PLACE_ID",
+  whatsapp: "919999999999",       // country code + number, no + or spaces
+  whatsappMsg: "Hi, I found you through your card.",
+  instagram: "sharmacafe",        // username only
+  facebook: "sharmacafe",         // page username only
+  prompts: [                      // questions that help customers write; leave [] to hide
+    "What did you order, and how did it taste?",
+    "How was the service and the staff?",
+    "Would you bring a friend or family here?",
+    "What would you tell someone visiting for the first time?"
+  ],
+  poweredBy: ""                   // e.g. "Card by YourBrand"
+};
+/* ==================================== */
+
+var ICON = {
+  google:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg>',
+  wa:'<svg viewBox="0 0 24 24"><path fill="#25D366" d="M12 2a10 10 0 00-8.6 15.1L2 22l5-1.3A10 10 0 1012 2zm5.2 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.8s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.6-.3.4c-.1.2-.3.3-.1.6.2.3.7 1.2 1.5 1.9 1 .9 1.9 1.2 2.2 1.3.3.1.4.1.6-.1l.8-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.8-.1 1.3z"/></svg>',
+  ig:'<svg viewBox="0 0 24 24"><defs><linearGradient id="g" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#feda75"/><stop offset=".4" stop-color="#fa7e1e"/><stop offset=".7" stop-color="#d62976"/><stop offset="1" stop-color="#4f5bd5"/></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="6" fill="url(#g)"/><circle cx="12" cy="12" r="4.4" fill="none" stroke="#fff" stroke-width="2"/><circle cx="17.3" cy="6.7" r="1.3" fill="#fff"/></svg>',
+  fb:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#1877F2"/><path fill="#fff" d="M13.5 21v-7h2.4l.4-2.8h-2.8V9.4c0-.8.3-1.4 1.4-1.4h1.5V5.5c-.3 0-1.1-.1-2.1-.1-2.1 0-3.600 1.300-3.600 3.700v2.100H8.300V14h2.400v7z"/></svg>'
+};
+
+function el(id){return document.getElementById(id)}
+document.title = SHOP.name;
+el("name").textContent = SHOP.name;
+el("tagline").textContent = SHOP.tagline;
+el("logo").textContent = SHOP.name.charAt(0).toUpperCase();
+
+/* tappable stars, all open the Google review page */
+var s = "";
+for (var i = 1; i <= 5; i++) {
+  s += '<a href="' + SHOP.googleReview + '" target="_blank" rel="noopener" aria-label="Rate ' + i + ' stars on Google">' + ICON.google + '</a>';
+}
+el("stars").innerHTML = s;
+
+var links = [];
+links.push({cls:"main", href:SHOP.googleReview, icon:ICON.google, t:"Write a Google review", d:"Helps others find us"});
+if (SHOP.whatsapp) links.push({href:"https://wa.me/" + SHOP.whatsapp + "?text=" + encodeURIComponent(SHOP.whatsappMsg), icon:ICON.wa, t:"Chat on WhatsApp", d:"+" + SHOP.whatsapp});
+if (SHOP.instagram) links.push({href:"https://instagram.com/" + SHOP.instagram, icon:ICON.ig, t:"Follow on Instagram", d:"@" + SHOP.instagram});
+if (SHOP.facebook) links.push({href:"https://facebook.com/" + SHOP.facebook, icon:ICON.fb, t:"Like us on Facebook", d:SHOP.facebook});
+
+el("links").innerHTML = links.map(function(l){
+  return '<a class="' + (l.cls||"") + '" href="' + l.href + '" target="_blank" rel="noopener">' + l.icon + '<span>' + l.t + '<small>' + l.d + '</small></span></a>';
+}).join("");
+if (SHOP.prompts && SHOP.prompts.length) {
+  el("ideaList").innerHTML = SHOP.prompts.map(function(p){return '<li>' + p + '</li>'}).join("");
+} else {
+  el("ideas").style.display = "none";
+}
+el("foot").textContent = SHOP.poweredBy;
+</script>
+</body>
+</html>
